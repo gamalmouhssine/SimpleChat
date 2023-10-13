@@ -1,0 +1,35 @@
+﻿@page
+
+
+<h1>Chat Room</h1>
+
+<div id="chat" style="max-height: 300px; overflow: auto;"></div>
+
+<input type="text" id="user" placeholder="User">
+<input type="text" id="message" placeholder="Message">
+<button id="sendButton">Send</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/3.1.9/signalr.min.js"></script>
+<script>
+    const user = document.getElementById("user").value;
+    const message = document.getElementById("message").value;
+    const sendButton = document.getElementById("sendButton");
+    const chat = document.getElementById("chat");
+
+    const connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
+
+    connection.on("ReceiveMessage", (user, message) => {
+        const messageElement = document.createElement("p");
+        messageElement.textContent = `${user}: ${message}`;
+        chat.appendChild(messageElement);
+    });
+
+    connection.start().catch(err => console.error(err.toString()));
+
+    sendButton.addEventListener("click", event => {
+        const user = document.getElementById("user").value;
+        const message = document.getElementById("message").value;
+        connection.invoke("SendMessage", user, message).catch(err => console.error(err.toString()));
+        event.preventDefault();
+    });
+</script>
